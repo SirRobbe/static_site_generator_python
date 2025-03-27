@@ -18,8 +18,11 @@ class HTMLNode:
 
 
     def props_to_html(self) -> str:
+        if self.props is None or len(self.props) == 0:
+            return ""
+
         prop_strings = list(map(lambda prop_key: f"{prop_key}=\"{self.props[prop_key]}\"", self.props))
-        return " ".join(prop_strings)
+        return " " + " ".join(prop_strings)
 
 
     def __repr__(self):
