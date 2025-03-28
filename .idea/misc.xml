@@ -3,4 +3,7 @@
   <component name="Black">
     <option name="sdkName" value="Python 3.13 (course_008_static_site_generator)" />
   </component>
+  <component name="PythonCompatibilityInspectionAdvertiser">
+    <option name="version" value="3" />
+  </component>
 </project>
