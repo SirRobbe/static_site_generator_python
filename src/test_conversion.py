@@ -95,3 +95,27 @@ class TestConversion(unittest.TestCase):
     def test_split_nodes_empty(self):
         new_nodes = split_nodes_delimiter([], "_", TextType.ITALIC)
         self.assertEqual(new_nodes, [])
+
+
+    def test_extract_markdown_images(self):
+        text = "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and ![obi wan](https://i.imgur.com/fJRm4Vk.jpeg)"
+        images = extract_markdown_images(text)
+        self.assertEqual(len(images), 2)
+        self.assertEqual(images[0], ("rick roll", "https://i.imgur.com/aKaOqIh.gif"))
+        self.assertEqual(images[1], ("obi wan", "https://i.imgur.com/fJRm4Vk.jpeg"))
+
+        text = "This has no image"
+        images = extract_markdown_images(text)
+        self.assertEqual(len(images), 0)
+
+
+    def test_extract_markdown_links(self):
+        text = "This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)"
+        links = extract_markdown_links_from_text(text)
+        self.assertEqual(len(links), 2)
+        self.assertEqual(links[0], ("to boot dev", "https://www.boot.dev"))
+        self.assertEqual(links[1], ("to youtube", "https://www.youtube.com/@bootdotdev"))
+
+        text = "This has no links"
+        links = extract_markdown_links_from_text(text)
+        self.assertEqual(len(links), 0)
