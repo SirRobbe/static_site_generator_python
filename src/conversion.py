@@ -1,5 +1,6 @@
+from htmlnode import LeafNode, HTMLNode
 from textnode import TextNode, TextType
-from htmlnode import LeafNode, ParentNode, HTMLNode
+
 
 def text_node_to_html_node(text_node: TextNode) -> HTMLNode:
     match text_node.type:
@@ -17,3 +18,18 @@ def text_node_to_html_node(text_node: TextNode) -> HTMLNode:
             return LeafNode(None, text_node.text)
         case _:
             raise Exception(f"Unknown text type: {text_node.type}")
+
+
+def split_nodes_delimiter(old_nodes: list[TextNode], delimiter: str, text_type: TextType) -> list[TextNode]:
+
+    new_nodes = []
+
+    for node in old_nodes:
+        node_parts = node.text.split(delimiter)
+        for i in range(0, len(node_parts)):
+            if i == 0 or i == (len(node_parts) - 1):
+                new_nodes.append(TextNode(node_parts[i], node.type))
+            else:
+                new_nodes.append(TextNode(node_parts[i], text_type))
+
+    return new_nodes
