@@ -137,6 +137,13 @@ class TestConversion(unittest.TestCase):
             new_nodes,
         )
 
+        node = TextNode("This text has no images", TextType.NORMAL)
+        new_nodes = split_nodes_image([node])
+        self.assertListEqual(
+            [node],
+            new_nodes,
+        )
+
 
     def test_split_links(self):
         node = TextNode(
@@ -155,3 +162,29 @@ class TestConversion(unittest.TestCase):
             ],
             new_nodes,
         )
+
+        node = TextNode("This text has no links", TextType.NORMAL)
+        new_nodes = split_nodes_link([node])
+        self.assertListEqual(
+            [node],
+            new_nodes,
+        )
+
+
+
+    def test_text_to_textnodes(self):
+        nodes = text_to_textnodes("This is **text** with an _italic_ word and a `code block` and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) and a [link](https://boot.dev)")
+        self.assertEqual(len(nodes), 10)
+        self.assertListEqual([
+            TextNode("This is ", TextType.NORMAL),
+            TextNode("text", TextType.BOLD),
+            TextNode(" with an ", TextType.NORMAL),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" word and a ", TextType.NORMAL),
+            TextNode("code block", TextType.CODE),
+            TextNode(" and an ", TextType.NORMAL),
+            TextNode("obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"),
+            TextNode(" and a ", TextType.NORMAL),
+            TextNode("link", TextType.LINK, "https://boot.dev"),
+        ],
+        nodes)
