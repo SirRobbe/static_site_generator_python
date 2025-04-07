@@ -1,6 +1,8 @@
 from re import findall
+from unittest import case
+
 from htmlnode import LeafNode, HTMLNode
-from textnode import TextNode, TextType
+from textnode import TextNode, TextType, BlockType
 
 
 def text_node_to_html_node(text_node: TextNode) -> HTMLNode:
@@ -105,3 +107,19 @@ def markdown_to_blocks(text: str) -> list[str]:
     potential_blocks = list(map(lambda block: block.strip(), potential_blocks))
     blocks = list(filter(lambda block: len(block) > 0, potential_blocks))
     return blocks
+
+
+def block_to_block_type(block: str) -> BlockType:
+
+    if block.startswith("#"):
+        return BlockType.HEADING
+    elif block.startswith("> "):
+        return BlockType.QUOTE
+    elif block.startswith("- "):
+        return BlockType.UNORDERED_LIST
+    elif block.startswith("1. "):
+        return BlockType.ORDERED_LIST
+    elif block.startswith("```"):
+        return BlockType.CODE
+    else:
+        return BlockType.PARAGRAPH
