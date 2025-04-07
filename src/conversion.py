@@ -42,3 +42,47 @@ def extract_markdown_images(text: str) -> list[(str, str)]:
 
 def extract_markdown_links_from_text(text: str) -> list[(str, str)]:
     return findall(r"\[(.*?)]\((.*?)\)", text)
+
+
+def split_nodes_image(nodes: list[TextNode]) -> list[TextNode]:
+    new_nodes = []
+
+    for node in nodes:
+        images = extract_markdown_images(node.text)
+        if len(images) == 0:
+            new_nodes.append(node)
+
+        text = node.text
+        for image in images:
+            texts: list = text.split("!", maxsplit=1)
+            new_nodes.append(TextNode(texts[0], TextType.NORMAL))
+            new_nodes.append(TextNode(image[0], TextType.IMAGE, url=image[1]))
+            texts = text.split(")", maxsplit=1)
+            text = texts[-1]
+
+        if len(text) != 0:
+            new_nodes.append(TextNode(text, TextType.NORMAL))
+
+    return new_nodes
+
+
+def split_nodes_link(nodes: list[TextNode]) -> list[TextNode]:
+    new_nodes = []
+
+    for node in nodes:
+        links = extract_markdown_links_from_text(node.text)
+        if len(links) == 0:
+            new_nodes.append(node)
+
+        text = node.text
+        for link in links:
+            texts: list = text.split("[", maxsplit=1)
+            new_nodes.append(TextNode(texts[0], TextType.NORMAL))
+            new_nodes.append(TextNode(link[0], TextType.LINK, url=link[1]))
+            texts = text.split(")", maxsplit=1)
+            text = texts[-1]
+
+        if len(text) != 0:
+            new_nodes.append(TextNode(text, TextType.NORMAL))
+
+    return new_nodes
