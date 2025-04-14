@@ -13,13 +13,13 @@ def copy_dir(src_dir: str, dest_dir: str):
             copy_dir(src_path, dest_path)
 
 
-output_dir = os.path.relpath("../public")
+output_dir = os.path.relpath("public")
 
 if os.path.exists(output_dir):
     print("clearing build directory")
-    shutil.rmtree("../public")
+    shutil.rmtree(output_dir)
 
 os.makedirs(output_dir)
 
-static_dir = os.path.relpath("../static")
+static_dir = os.path.relpath("static")
 copy_dir(static_dir, output_dir)
