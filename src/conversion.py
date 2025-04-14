@@ -1,7 +1,9 @@
+import re
 from re import findall
 from unittest import case
 
 from htmlnode import LeafNode, HTMLNode
+from src.htmlnode import ParentNode
 from textnode import TextNode, TextType, BlockType
 
 
@@ -103,7 +105,7 @@ def text_to_textnodes(text: str) -> list[TextNode]:
 
 
 def markdown_to_blocks(text: str) -> list[str]:
-    potential_blocks = text.split("\n\n")
+    potential_blocks = re.split(r"\n\s*\n", text)
     potential_blocks = list(map(lambda block: block.strip(), potential_blocks))
     blocks = list(filter(lambda block: len(block) > 0, potential_blocks))
     return blocks
@@ -123,3 +125,39 @@ def block_to_block_type(block: str) -> BlockType:
         return BlockType.CODE
     else:
         return BlockType.PARAGRAPH
+
+
+def markdown_to_html_node(markdown: str) -> HTMLNode:
+    blocks = markdown_to_blocks(markdown)
+    block_nodes = []
+    for block in blocks:
+        block_type = block_to_block_type(block)
+        tag = block_type_to_html_tag(block_type)
+        if block_type == BlockType.CODE:
+            code = block.replace("```", "").replace("\n", "").strip()
+            html_node = LeafNode("code", code)
+        else:
+            text_nodes = text_to_textnodes(block)
+            children = [text_node_to_html_node(text_node) for text_node in text_nodes]
+            html_node = ParentNode(tag, children, {})
+
+        block_nodes.append(html_node)
+
+    root = ParentNode("div", block_nodes, {})
+    return root
+
+
+def block_type_to_html_tag(block_type: BlockType) -> str:
+    match block_type:
+        case BlockType.PARAGRAPH:
+            return "p"
+        case BlockType.HEADING:
+            return "h1"
+        case BlockType.CODE:
+            return "code"
+        case BlockType.QUOTE:
+            return "blockquote"
+        case BlockType.UNORDERED_LIST:
+            return "ul"
+        case BlockType.ORDERED_LIST:
+            return "ol"
