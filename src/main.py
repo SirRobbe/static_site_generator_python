@@ -1,10 +1,25 @@
-from textnode import *
-from htmlnode import HTMLNode
+import os.path
+import shutil
 
-print("hello world")
-node = TextNode("This is some anchor text", TextType.LINK, "https://www.boot.dev")
+def copy_dir(src_dir: str, dest_dir: str):
+    for entry in os.listdir(src_dir):
+        src_path = os.path.join(src_dir, entry)
+        dest_path = os.path.join(dest_dir, entry)
+        if os.path.isfile(src_path):
+            shutil.copy(src_path, dest_path)
+            print("copy {} to {}".format(src_path, dest_path))
+        elif os.path.isdir(src_path):
+            os.makedirs(dest_path)
+            copy_dir(src_path, dest_path)
 
-child = HTMLNode(tag="a", value="link", props={"href": "https://www.boot.dev"})
-parent = HTMLNode(tag="h1", value="title", children=[child])
 
-print(parent)
+output_dir = os.path.relpath("../public")
+
+if os.path.exists(output_dir):
+    print("clearing build directory")
+    shutil.rmtree("../public")
+
+os.makedirs(output_dir)
+
+static_dir = os.path.relpath("../static")
+copy_dir(static_dir, output_dir)
