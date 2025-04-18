@@ -1,5 +1,7 @@
 import os.path
 import shutil
+import sys
+
 import conversion
 
 def copy_dir(src_dir: str, dest_dir: str):
@@ -14,7 +16,7 @@ def copy_dir(src_dir: str, dest_dir: str):
             copy_dir(src_path, dest_path)
 
 
-def generate_page(from_path: str, template_path: str, dest_path: str):
+def generate_page(from_path: str, template_path: str, dest_path: str, basepath: str):
     print(f"generating page from {from_path} to {dest_path} using {template_path}")
 
     with open(from_path, "r") as f:
@@ -27,6 +29,8 @@ def generate_page(from_path: str, template_path: str, dest_path: str):
     title = conversion.extract_title(content)
 
     page = template.replace("{{ Title }}", title).replace("{{ Content }}", html_content)
+    page = page.replace('href="/', f'href="{basepath}')
+    page = page.replace('src="/', f'src="{basepath}')
 
     dest_dir = os.path.dirname(dest_path)
     os.makedirs(dest_dir, exist_ok=True)
@@ -35,7 +39,12 @@ def generate_page(from_path: str, template_path: str, dest_path: str):
 
 
 def main():
-    output_dir = os.path.relpath("public")
+
+    basepath = "/"
+    if len(sys.argv) == 2:
+        basepath = sys.argv[1]
+
+    output_dir = os.path.relpath("docs")
 
     if os.path.exists(output_dir):
         print("clearing build directory")
@@ -45,11 +54,11 @@ def main():
 
     static_dir = os.path.relpath("static")
     copy_dir(static_dir, output_dir)
-    generate_page("content/index.md", "template.html", "public/index.html")
-    generate_page("content/blog/glorfindel/index.md", "template.html", "public/blog/glorfindel/index.html")
-    generate_page("content/blog/tom/index.md", "template.html", "public/blog/tom/index.html")
-    generate_page("content/blog/majesty/index.md", "template.html", "public/blog/majesty/index.html")
-    generate_page("content/contact/index.md", "template.html", "public/contact/index.html")
+    generate_page("content/index.md", "template.html", "docs/index.html", basepath)
+    generate_page("content/blog/glorfindel/index.md", "template.html", "docs/blog/glorfindel/index.html", basepath)
+    generate_page("content/blog/tom/index.md", "template.html", "docs/blog/tom/index.html", basepath)
+    generate_page("content/blog/majesty/index.md", "template.html", "docs/blog/majesty/index.html", basepath)
+    generate_page("content/contact/index.md", "template.html", "docs/contact/index.html", basepath)
 
 
 main()
