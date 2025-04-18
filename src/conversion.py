@@ -1,9 +1,7 @@
 import re
 from re import findall
-from unittest import case
 
-from htmlnode import LeafNode, HTMLNode
-from src.htmlnode import ParentNode
+from htmlnode import LeafNode, HTMLNode, ParentNode
 from textnode import TextNode, TextType, BlockType
 
 
@@ -83,7 +81,9 @@ def split_nodes_link(nodes: list[TextNode]) -> list[TextNode]:
         text = node.text
         for link in links:
             texts: list = text.split("[", maxsplit=1)
-            new_nodes.append(TextNode(texts[0], TextType.NORMAL))
+            if len(texts[0].strip()) > 0:
+                new_nodes.append(TextNode(texts[0], TextType.NORMAL))
+
             new_nodes.append(TextNode(link[0], TextType.LINK, url=link[1]))
             texts = text.split(")", maxsplit=1)
             text = texts[-1]
@@ -127,6 +127,21 @@ def block_to_block_type(block: str) -> BlockType:
         return BlockType.PARAGRAPH
 
 
+def get_text_from_block(block: str, block_type: BlockType) -> str:
+    match block_type:
+        case BlockType.HEADING:
+            start = 0
+            for char in block:
+                if char == "#":
+                    start += 1
+                else:
+                    return block[start:].strip()
+
+        case BlockType.QUOTE:
+            return block.replace(">", "")
+
+    return block
+
 def markdown_to_html_node(markdown: str) -> HTMLNode:
     blocks = markdown_to_blocks(markdown)
     block_nodes = []
@@ -137,8 +152,32 @@ def markdown_to_html_node(markdown: str) -> HTMLNode:
             code = block.replace("```", "").replace("\n", "").strip()
             html_node = LeafNode("code", code)
         else:
-            text_nodes = text_to_textnodes(block)
-            children = [text_node_to_html_node(text_node) for text_node in text_nodes]
+            text = get_text_from_block(block, block_type)
+
+            if block_type == BlockType.UNORDERED_LIST:
+                children = []
+                lines = block.split("- ")
+                for line in lines:
+                    if len(line) <= 0:
+                        continue
+
+                    text_nodes = text_to_textnodes(line)
+                    html_nodes = [text_node_to_html_node(text_node) for text_node in text_nodes]
+                    children.append(ParentNode("li", html_nodes))
+            elif block_type == BlockType.ORDERED_LIST:
+                children = []
+                lines = re.split(r"\d+. ", block)
+                for line in lines:
+                    if len(line) <= 0:
+                        continue
+
+                    text_nodes = text_to_textnodes(line)
+                    html_nodes = [text_node_to_html_node(text_node) for text_node in text_nodes]
+                    children.append(ParentNode("li", html_nodes))
+            else:
+                text_nodes = text_to_textnodes(text)
+                children = [text_node_to_html_node(text_node) for text_node in text_nodes]
+
             html_node = ParentNode(tag, children, {})
 
         block_nodes.append(html_node)
@@ -161,3 +200,11 @@ def block_type_to_html_tag(block_type: BlockType) -> str:
             return "ul"
         case BlockType.ORDERED_LIST:
             return "ol"
+
+
+def extract_title(markdown: str):
+    blocks = markdown_to_blocks(markdown)
+    for block in blocks:
+        if block.startswith("# "):
+            header = block[1:].strip()
+            return header

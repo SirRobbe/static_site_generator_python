@@ -277,3 +277,9 @@ This is text that _should_ remain the **same** even with inline stuff
             html,
             "<div><code>This is text that _should_ remain the **same** even with inline stuff</code></div>",
         )
+
+
+    def test_extract_title(self):
+        text = "  # This is the header    "
+        title = extract_title(text)
+        self.assertEqual(title, "This is the header")
